@@ -16,8 +16,16 @@
     <tbody>
       <tr *ngFor="let n of notes; index as i">
         <td scope="row">{{i+1}}</td>
-        <td>{{n.comment}}</td>
-        <td><i>e</i> <i>x</i></td>
+        <td>
+          <div>
+            <span *ngIf="editMode != i">{{n.comment}}</span>
+            <input type="text" (keypress)="updateNote($event,n)" [value]="n.comment" *ngIf="editMode == i" name="" id="">
+          </div>
+          <div>
+            <small>{{n.dateTime | date:'dd/MM/yyyy HH:mm:ss'}}</small>
+          </div>
+        </td>
+        <td><i (click)="editMode=i;"> E </i> <i (click)="deleteNote(i)"> X </i></td>
       </tr>
       <tr>
           <td scope="row">-</td>
