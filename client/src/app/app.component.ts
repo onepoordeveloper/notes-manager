@@ -1,17 +1,24 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { notStrictEqual } from 'assert';
+import { DataService } from "./data.service";
+import { Note } from './note.model';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss', "../../node_modules/bootstrap/dist/css/bootstrap.min.css"]
 })
-export class AppComponent {
+export class AppComponent implements OnInit{
+  notes: Note[];
+  constructor(private _dataService: DataService) {}
   title = 'Notes Manager';
   editMode = null; // any id within this variable will tell the frontend to put the input field rather than the text
   addNote = function(e){
     if (e.keyCode == 13 && e.target.value.trim()){
-      this.notes.push({id:notStrictEqual.length,comment:e.target.value,dateTime:Date.now()});
+      this._dataService.addNote({id: null, comment: e.target.value, dateTime:Date.now() }).subscribe(data => {
+        console.log(data);
+        this.fetchNotes();
+      })
       e.target.value="";
     }
   }
@@ -19,32 +26,34 @@ export class AppComponent {
     if (e.keyCode == 13){
       n.comment = e.target.value;
       n.dateTime = Date.now();
+      this._dataService.updateNote(n).subscribe(data => {
+        console.log(data);
+        this.fetchNotes();
+      })
       this.editMode = null;
     }
   }
-  deleteNote = function(i){
+  deleteNote = function(id){
+    this.editMode = null;
     if (confirm(`Are you sure you want to delete this note?`)){
-      this.notes.splice(i,1);
-      this.editMode = null;
+      this._dataService.deleteNote(id).subscribe(data => {
+        console.log(data);
+        this.fetchNotes();
+      })
+      
     }
   }
 
+  fetchNotes = function(){
+    return this._dataService.getNotes().subscribe(response => {
+      console.log(response);
+      this.notes = response.data;
+    })
+  }
+
   // initializing notes array - this will be replaced by fetch
-  notes = [
-    {
-      id: "1",
-      comment: "description for sub1",
-      dateTime: 1564171403492
-    },
-    {
-      id: "2",
-      comment: "description for sub2",
-      dateTime: 1564171403492
-    },
-    {
-      id: "3",
-      comment: "description for sub3",
-      dateTime: 1564171403492
-    }
-  ]
+
+  ngOnInit() {
+    this.fetchNotes();
+  }
 }

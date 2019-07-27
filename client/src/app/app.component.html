@@ -25,7 +25,7 @@
             <small>{{n.dateTime | date:'dd/MM/yyyy HH:mm:ss'}}</small>
           </div>
         </td>
-        <td><i (click)="editMode=i;"> E </i> <i (click)="deleteNote(i)"> X </i></td>
+        <td><i (click)="editMode=i;"> E </i> <i (click)="deleteNote(n.id)"> X </i></td>
       </tr>
       <tr>
           <td scope="row">-</td>
