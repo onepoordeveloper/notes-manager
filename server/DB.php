@@ -22,14 +22,8 @@ class Database{
 	  	$this->DbName="notes-manager";
 	  	$this->DbUser="root";
 	  	$this->DbPwd="";
-	  	$this->DbType="mysqli";
-		// $this->Conn = ADONewConnection($this->DbType);			
+	  	$this->DbType="mysqli";		
 		$this->Conn = mysqli_connect($this->DbHost, $this->DbUser, $this->DbPwd, $this->DbName);
-
-		// $this->ConnReport = ADONewConnection($this->DbType);			
-		// $this->ConnReport->PConnect($this->DbHost, $this->DbUser, $this->DbPwd, $this->DbName);
-
-		//print "<li>Connection: Open ".self::$Counter."</li>";
 	}
   
 	/**
@@ -41,20 +35,12 @@ class Database{
 	 */
 	
 	static function ConnectDb(){   
-        //print "<li>Attemp To Open Connection</li>";   
         if (!isset(self::$SelfInstance)) {
             $c = __CLASS__;
             self::$SelfInstance = new $c;           
         } // if
  		return self::$SelfInstance->Conn;
 	}
-	/* static function ConnectDbReport(){    
-        if (!isset(self::$SelfInstance)) {
-            $e = __CLASS__;
-            self::$SelfInstance = new $e;           
-        } // if
- 		return self::$SelfInstance->ConnReport;
-	} */
 	
 	/**
 	 * Desctruct of the database class
