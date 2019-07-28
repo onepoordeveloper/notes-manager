@@ -20,15 +20,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 } 
 
 // calling the DB in
-require_once("DB.php");
-
-// making a connection object
-$conn = Database::ConnectDb();
-
 // defining response data
 $response = array();
 $response['error'] = null;
 $response['ack'] = true;
+
+require_once("DB.php");
+
+// making a connection object
+$conn = Database::ConnectDb();
+if ($conn->Error){
+    fillResponseWithError("Error initiating a connection to the DB..");
+    echo json_encode($response);
+    exit;
+}
+
 
 function fillResponseWithError ($err = "Something went wrong..") {
     // to avoid code duplication, it'll prepare the response object based on the error message..

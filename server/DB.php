@@ -1,5 +1,5 @@
 <?
-
+error_reporting(0);
 class Database{
 	
 	private $DbHost;
@@ -22,10 +22,17 @@ class Database{
 	  	$this->DbName="notes-manager";
 	  	$this->DbUser="root";
 	  	$this->DbPwd="";
-        $this->DbType="mysqli";	
-        $this->Conn = new PDO("mysql:host=$this->DbHost;dbname=$this->DbName", $this->DbUser, $this->DbPwd);
-        // set the PDO error mode to exception
-        $this->Conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+		$this->DbType="mysqli";	
+		try{
+			$this->Conn = new PDO("mysql:host=$this->DbHost;dbname=$this->DbName", $this->DbUser, $this->DbPwd);
+			// set the PDO error mode to exception
+			$this->Conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+		}
+		catch (Exception $ex){
+			$this->Conn->Error = true;
+			// return $this->Conn;
+		}
 		// $this->Conn = mysqli_connect($this->DbHost, $this->DbUser, $this->DbPwd, $this->DbName);
 	}
   
@@ -41,7 +48,8 @@ class Database{
         if (!isset(self::$SelfInstance)) {
             $c = __CLASS__;
             self::$SelfInstance = new $c;           
-        } // if
+		} // if
+		
  		return self::$SelfInstance->Conn;
 	}
 	
