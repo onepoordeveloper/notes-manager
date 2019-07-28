@@ -22,8 +22,11 @@ class Database{
 	  	$this->DbName="notes-manager";
 	  	$this->DbUser="root";
 	  	$this->DbPwd="";
-	  	$this->DbType="mysqli";		
-		$this->Conn = mysqli_connect($this->DbHost, $this->DbUser, $this->DbPwd, $this->DbName);
+        $this->DbType="mysqli";	
+        $this->Conn = new PDO("mysql:host=$this->DbHost;dbname=$this->DbName", $this->DbUser, $this->DbPwd);
+        // set the PDO error mode to exception
+        $this->Conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+		// $this->Conn = mysqli_connect($this->DbHost, $this->DbUser, $this->DbPwd, $this->DbName);
 	}
   
 	/**
@@ -53,7 +56,7 @@ class Database{
 		unset($this->DbPwd);
 		unset($this->DbType);
 		if (isset($this->Conn)){
-			$this->Conn->Close();
+			$this->Conn = null;
 	    }
 
     }

@@ -1,4 +1,8 @@
 <?php
+// making output presentable
+header("Content-Type:application/json");
+
+// to make this work on localhost ignoring the CORS
 $post_body = json_decode(file_get_contents('php://input'));
 if (isset($_SERVER['HTTP_ORIGIN'])) {
     //header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
@@ -15,59 +19,110 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit(0);
 } 
 
+// calling the DB in
 require_once("DB.php");
 
+// making a connection object
 $conn = Database::ConnectDb();
 
+// defining response data
 $response = array();
 $response['error'] = null;
 $response['ack'] = true;
 
-if (isset($_GET['operation'])){
-    if ($_GET['operation'] == "getNotes"){
-        $sql = "SELECT id, comment, (dateTime * 1000) as dateTime from notes;";
-        $result = mysqli_query($conn,$sql);
-        if ($result->num_rows > 0) {
-            while($row = $result->fetch_assoc()) {
-                $response['data'][] = $row;
-            }
-        } else {
-            $response['data'] = array();
-        }
-    }
-    else if ($_GET['operation'] == 'addNote'){
-        $comment = $post_body->comment;
-        $dateTime = $post_body->dateTime;
-        $sql = "INSERT INTO notes (comment, dateTime) VALUES ('$comment', ($dateTime/1000));";
-        // echo $sql;exit;
-        $result = mysqli_query($conn, $sql);
-        if (mysqli_insert_id($conn)){
-            $response['data'] = mysqli_insert_id($conn);
-        }
-    }
-    else if ($_GET['operation'] == 'updateNote'){
-        $comment = $post_body->comment;
-        $dateTime = $post_body->dateTime;
-        $id = $post_body->id;
-        $sql = "UPDATE notes SET comment = '$comment', dateTime = $dateTime where id = $id;;";
-        // echo $sql;exit;
-        $result = mysqli_query($conn, $sql);
-        if (mysqli_affected_rows($conn)){
-            $response['data'] = true;
-        }
-    }
-    else if ($_GET['operation'] == 'deleteNote'){
-        $id = $post_body->id;
-        $sql = "DELETE FROM notes where id = $id;";
-        $result = mysqli_query($conn, $sql);
-        if (mysqli_affected_rows($conn)){
-            $response['data'] = true;
+function fillResponseWithError ($err = "Something went wrong..") {
+    // to avoid code duplication, it'll prepare the response object based on the error message..
+    global $response;
+    $response['ack'] = false;
+    $response['error'] = true;
+    $response['message'] = $err;
+}
+
+function getNotes () {
+    global $response, $conn;
+    $sql = "SELECT id, comment, (dateTime * 1000) as dateTime from notes;";
+    $stmt = $conn->prepare($sql); 
+    $stmt->execute();
+    if ($stmt->rowcount()){
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $response['data'][] = $row;
         }
     }
     else{
-        $response['error'] = "no operation specified..";
+        $response['data'] = array();
     }
-    if (sizeof($response['data'])){
+}
+
+function addNote() {
+    global $response, $conn, $post_body;
+    if ($post_body && $post_body->comment){
+        $comment = $post_body->comment;
+        $dateTime = $post_body->dateTime;
+        $sql = "INSERT INTO notes (comment, dateTime) VALUES (?, (?/1000));";
+        $queryVars = [$comment, $dateTime];
+        $stmt = $conn->prepare($sql);
+        $stmt->execute($queryVars);
+        if ($conn->lastInsertId()){
+            $response['data'] =$conn->lastInsertId();
+        }
+        else{
+            fillResponseWithError();
+        }
+    }
+    else{
+        fillResponseWithError("No post data specified..");
+    }
+}
+
+function updateNote(){
+    global $response, $conn, $post_body;
+    $comment = $post_body->comment;
+    $dateTime = $post_body->dateTime;
+    $id = $post_body->id;
+    $sql = "UPDATE notes SET comment = ?, dateTime = (?/1000) where id = ?;";
+    $queryVars = [$comment, $dateTime, $id];
+    $stmt = $conn->prepare($sql);
+    $stmt->execute($queryVars);
+    if ($stmt->rowcount()){
+        $response['data'] = $stmt->rowcount();
+    }
+    else{
+        fillResponseWithError();
+    }
+}
+
+function deleteNote(){
+    global $response, $conn, $post_body;
+    $id = $post_body->id;
+    $sql = "DELETE FROM notes where id = ?;";
+    $stmt = $conn->prepare($sql);
+    $queryVars = [$id];
+    $stmt->execute($queryVars);
+    if ($stmt->rowcount()){
+        $response['data'] = $stmt->rowcount();
+    }
+    else{
+        fillResponseWithError();
+    }
+}
+
+if (isset($_GET['operation'])){
+    if ($_GET['operation'] == "getNotes"){
+        getNotes();
+    }
+    else if ($_GET['operation'] == 'addNote'){
+        addNote();
+    }
+    else if ($_GET['operation'] == 'updateNote'){
+        updateNote();
+    }
+    else if ($_GET['operation'] == 'deleteNote'){
+        deleteNote();
+    }
+    else{
+        fillResponseWithError("Invalid operation specified..");
+    }
+    if (isset($response['data']) && sizeof($response['data'])){
         echo json_encode($response);
     }
     else{
@@ -76,6 +131,8 @@ if (isset($_GET['operation'])){
     exit;
 }
 else{
-    echo "please specify operation..";
+    fillResponseWithError("No operation specified..");
+    echo json_encode($response);
+    exit;
 }
 ?>
