@@ -1,55 +1,55 @@
-import { Component, OnInit } from '@angular/core';
-import { notStrictEqual } from 'assert';
+import { Component, OnInit } from "@angular/core";
+import { notStrictEqual } from "assert";
 import { DataService } from "./data.service";
-import { Note } from './note.model';
+import { Note } from "./note.model";
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss', "../../node_modules/bootstrap/dist/css/bootstrap.min.css"]
+  selector: "app-root",
+  templateUrl: "./app.component.html",
+  styleUrls: [
+    "./app.component.scss",
+    "../../node_modules/bootstrap/dist/css/bootstrap.min.css"
+  ]
 })
-export class AppComponent implements OnInit{
+export class AppComponent {
   notes: Note[];
   constructor(private _dataService: DataService) {}
-  title = 'Notes Manager';
+  title = "Notes Manager";
   editMode = null; // any id within this variable will tell the frontend to put the input field rather than the text
-  addNote = function(e){
-    if (e.keyCode == 13 && e.target.value.trim()){
-      this._dataService.addNote({id: null, comment: e.target.value, dateTime:Date.now() }).subscribe(data => {
-        console.log(data);
-        this.fetchNotes();
-      })
-      e.target.value="";
+  addNote = function(e) {
+    if (e.keyCode == 13 && e.target.value.trim()) {
+      this._dataService
+        .addNote({ id: null, comment: e.target.value, dateTime: Date.now() })
+        .subscribe(data => {
+          this.fetchNotes();
+        });
+      e.target.value = "";
     }
-  }
-  updateNote = function(e,n){
-    if (e.keyCode == 13){
+  };
+  updateNote = function(e, n) {
+    if (e.keyCode == 13) {
       n.comment = e.target.value;
       n.dateTime = Date.now();
       this._dataService.updateNote(n).subscribe(data => {
-        console.log(data);
         this.fetchNotes();
-      })
+      });
       this.editMode = null;
     }
-  }
-  deleteNote = function(id){
+  };
+  deleteNote = function(id) {
     this.editMode = null;
-    if (confirm(`Are you sure you want to delete this note?`)){
+    if (confirm(`Are you sure you want to delete this note?`)) {
       this._dataService.deleteNote(id).subscribe(data => {
-        console.log(data);
         this.fetchNotes();
-      })
-      
+      });
     }
-  }
+  };
 
-  fetchNotes = function(){
+  fetchNotes = function() {
     return this._dataService.getNotes().subscribe(response => {
-      console.log(response);
       this.notes = response.data;
-    })
-  }
+    });
+  };
 
   // initializing notes array - this will be replaced by fetch
 

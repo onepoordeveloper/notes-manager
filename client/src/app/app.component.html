@@ -5,72 +5,63 @@
       <div class="row">
         <div class="col-md-12">
           <div style="text-align:center">
-              <h1>
-                {{ title }}
-              </h1>
-            </div>
-            <div class="col-md-12">
-                <input 
-                        type="text"
-                        placeholder="Enter new note.."
-                        (keypress)="addNote($event)"
-                        name=""
-                        id="addNoteTextbox"
-                      >
-            </div>
+            <h1>
+              {{ title }}
+            </h1>
+          </div>
+          <div class="col-md-12">
+            <input
+              type="text"
+              placeholder="Enter new note.."
+              (keypress)="addNote($event)"
+              name=""
+              id="addNoteTextbox"
+            />
+          </div>
         </div>
       </div>
     </div>
     <div class="col-md-8 notes-container">
-        <table class="table table-striped table-bordered table-hover table-dark">
-            <thead>
-              <tr>
-                <th
-                  width="5%"
-                  scope="col"
-                >#</th>
-                <th
-                  width="85%"
-                  scope="col"
-                >Notes ({{notes && notes.length ? notes.length : 0}})</th>
-                <th
-                  width="10%"
-                  scope="col"
-                >Options</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let n of notes; index as i">
-                <td scope="row">{{i+1}}</td>
-                <td>
-                  <div>
-                    <span *ngIf="editMode != i">{{n.comment}}</span>
-                    <input
-                      type="text"
-                      (keypress)="updateNote($event,n)"
-                      [value]="n.comment"
-                      *ngIf="editMode == i"
-                      name=""
-                      id=""
-                    >
-                  </div>
-                  <div>
-                    <small>{{n.dateTime | date:'dd/MM/yyyy HH:mm:ss'}}</small>
-                  </div>
-                </td>
-                <td class="options-container"><i
-                    class="material-icons"
-                    (click)="editMode=i;"
-                  >edit</i> <i
-                    class="material-icons"
-                    (click)="deleteNote(n.id)"
-                  >delete</i></td>
-              </tr>
-            </tbody>
-          </table>
+      <h4 *ngIf="!notes || notes.length == 0">No notes here..</h4>
+      <table
+        *ngIf="notes && notes.length"
+        class="table table-striped table-bordered table-hover table-dark"
+      >
+        <thead>
+          <tr>
+            <th width="5%" scope="col">#</th>
+            <th width="85%" scope="col">
+              Notes ({{ notes && notes.length ? notes.length : 0 }})
+            </th>
+            <th width="10%" scope="col">Options</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let n of notes; index as i">
+            <td scope="row">{{ i + 1 }}</td>
+            <td>
+              <div>
+                <span *ngIf="editMode != i">{{ n.comment }}</span>
+                <input
+                  type="text"
+                  (keypress)="updateNote($event, n)"
+                  [value]="n.comment"
+                  *ngIf="editMode == i"
+                  name=""
+                  id=""
+                />
+              </div>
+              <div>
+                <small>{{ n.dateTime | date: "dd/MM/yyyy HH:mm:ss" }}</small>
+              </div>
+            </td>
+            <td class="options-container">
+              <i class="material-icons" (click)="editMode = i">edit</i>
+              <i class="material-icons" (click)="deleteNote(n.id)">delete</i>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
-  
-  
-
 </div>
